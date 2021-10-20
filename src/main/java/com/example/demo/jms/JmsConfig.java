@@ -1,6 +1,10 @@
 package com.example.demo.jms;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+
+/***
+ * @author Amod
+ */
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
