@@ -1,5 +1,7 @@
 package com.example.demo.entity;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -7,7 +9,9 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "user")
-public class User {
+public class User implements Serializable {
+
+	private static final long serialVersionUID = 3372031802759228079L;
 
 	@Id
 	@Column(name = "email")
@@ -85,6 +89,13 @@ public class User {
 
 	public void setUserPassword(String userPassword) {
 		this.userPassword = userPassword;
+	}
+
+	@Override
+	public String toString() {
+		return "User [userEmail=" + userEmail + ", userName=" + userName + ", userLocation=" + userLocation
+				+ ", userQualification=" + userQualification + ", userPercentage=" + userPercentage + ", userMobile="
+				+ userMobile + ", userPassword=" + userPassword + "]";
 	}
 
 }

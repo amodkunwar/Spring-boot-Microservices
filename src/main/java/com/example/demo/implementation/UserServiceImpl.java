@@ -16,8 +16,9 @@ import com.common.HTTPStatusCode;
 import com.example.demo.entity.User;
 import com.example.demo.implementation.template.GenericRestTemplate;
 import com.example.demo.implementation.template.UserEducationProperties;
-import com.example.demo.model.MovieResponse;
+import com.example.demo.jms.TopicPublish;
 import com.example.demo.model.UserEducationRequest;
+import com.example.demo.model.UserEducationResponse;
 import com.example.demo.model.UserRequest;
 import com.example.demo.model.UserResponse;
 import com.example.demo.repository.UserRepository;
@@ -46,19 +47,22 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private UserEducationProperties userEducationProperties;
 
+	@Autowired
+	private TopicPublish topicPublish;
+
 	@Override
 	public UserResponse getUsers(String email) {
 		UserResponse userResponse = null;
 		Optional<User> optionalUser = userRepository.findById(email);
-		ResponseEntity<MovieResponse> execuateExchange = genericRestTemplate.execuateExchange(optionalUser,
-				userEducationProperties.getBaseUrl(), HttpMethod.GET, MovieResponse.class);
+		ResponseEntity<UserEducationResponse> execuateExchange = genericRestTemplate.execuateExchange(optionalUser,
+				userEducationProperties.getBaseUrl(), HttpMethod.GET, UserEducationResponse.class);
 //		MovieResponse forObject = restTemplate.getForObject("http://MOVIE/movie/"+email, MovieResponse.class);
 //		MovieResponse movieResponse = myfeignClinet.getMovie(email);
 		if (null == execuateExchange) {
 			throw new ApplicationException("1.0.1", HTTPStatusCode.RESPONSE_CD_BADREQUEST,
 					MessageFormat.format("Unable to find move details for email {0}", email));
 		}
-		System.out.println(execuateExchange.getBody().getMovieName());
+		System.out.println(execuateExchange.getBody().getEmail());
 		if (optionalUser.isPresent()) {
 			userResponse = setResponse(optionalUser.get());
 		}
@@ -88,6 +92,7 @@ public class UserServiceImpl implements UserService {
 	public UserResponse userRegister(UserRequest userRequest) {
 		User user = setUserRequest(userRequest);
 		user = userRepository.save(user);
+		topicPublish.sendTopic(user);
 		UserEducationRequest userEducationRequest = setUserEducationRequest(user);
 		saveUserEducation(userEducationRequest);
 		return setResponse(user);
@@ -97,7 +102,7 @@ public class UserServiceImpl implements UserService {
 	public void saveUserEducation(UserEducationRequest userEducationRequest) {
 //		myfeignClinet.saveUserEducation(userEducationRequest);
 		genericRestTemplate.execuateExchange(userEducationRequest, userEducationProperties.getBaseUrl(),
-				HttpMethod.POST, MovieResponse.class);
+				HttpMethod.POST, UserEducationResponse.class);
 	}
 
 	private UserEducationRequest setUserEducationRequest(User user) {
